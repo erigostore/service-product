@@ -8,6 +8,6 @@ RUN microdnf update \
 
 #ARG JAR_FILE=target/*.jar
 ARG JAR_FILE=*.jar
-COPY ${JAR_FILE} report-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} service-product-0.0.1-SNAPSHOT.jar
 
-ENTRYPOINT ["java","-jar","report-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","service-product-0.0.1-SNAPSHOT.jar"]

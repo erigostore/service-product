@@ -24,4 +24,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("UPDATE Product s SET s.status =:status WHERE s.msku =:msku ")
     void updateStatusByMsku(@Param("status") String status, @Param("msku") String msku);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE Product s SET s.purchasePrice =:purchasePrice WHERE s.msku =:msku ")
+    void updatePurchasePrice(String msku, Long purchasePrice);
 }

@@ -6,10 +6,7 @@ import id.web.saka.report.util.Env;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("product")
@@ -45,6 +42,37 @@ public class ProductController {
          productService.setSaveSAPMasterProduct(brand, status);
 
         LOG.info("setSapMasterProductId|"+brand+"|isSaved="+isMasterDataSaved+"|status="+status+"|END");
+        return ResponseEntity.ok("{ \"status\": true }");
+    }
+
+    @CrossOrigin
+    @RequestMapping(value = "/setRevotaMasterProduct/{brand}/{password}")
+    public ResponseEntity setRevotaMasterProduct(@RequestBody String requestBody, @PathVariable String brand, @PathVariable String password) throws JsonProcessingException {
+        LOG.info("setRevotaMasterProduct|"+brand+"="+requestBody+"|START");
+        boolean isMasterDataSaved = false, isPassword = false;
+
+        if((brand.equals("POLKA") && password.equals(env.getPolkaWebhookSecretKey())) ||
+                ((brand.equals("ERIGO") && password.equals(env.getErigoWebhookSecretKey())))
+        ) {
+            isMasterDataSaved = productService.saveMasterProductRevota(brand, requestBody);
+        }
+
+        LOG.info("setRevotaMasterProduct|"+brand+"|isSaved="+isMasterDataSaved+"|isPassword="+isPassword+"|END");
+        return ResponseEntity.ok("{ \"status\": true }");
+    }
+    @CrossOrigin
+    @RequestMapping(value = "/setSapMasterProductCogs/{brand}/{password}")
+    public ResponseEntity setSapMasterProductCogs(@RequestBody String requestBody, @PathVariable String brand, @PathVariable String password) throws JsonProcessingException {
+        LOG.info("setSapMasterProductCogs|"+brand+"="+requestBody+"|START");
+        boolean isMasterDataSaved = false, isPassword = false;
+
+        if((brand.equals("POLKA") && password.equals(env.getPolkaWebhookSecretKey())) ||
+                ((brand.equals("ERIGO") && password.equals(env.getErigoWebhookSecretKey())))
+        ) {
+            isMasterDataSaved = productService.saveMasterProductCogs(brand, requestBody);
+        }
+
+        LOG.info("setSapMasterProductCogs|"+brand+"|isSaved="+isMasterDataSaved+"|isPassword="+isPassword+"|END");
         return ResponseEntity.ok("{ \"status\": true }");
     }
 }

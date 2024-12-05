@@ -14,7 +14,7 @@ public class Product {
     @JsonProperty("masterProductId")
     @Column(name = "id")
     private String id;
-    @JsonIgnore
+    @JsonProperty("brand")
     @Column(name = "brand")
     private String brand;
     @JsonProperty("msku")
@@ -33,22 +33,28 @@ public class Product {
     @JsonIgnore
     @Transient
     private String theme;
-    @JsonIgnore
-    @Column(name = "category_id")
-    private Long categoryId;
+    @JsonProperty("type")
+    @Column(name = "type")
+    private String type;
+    @JsonProperty("category")
+    @Transient
+    private String category;
     @JsonIgnore
     @Column(name = "status")
     private String status;
-    @JsonIgnore
+    @JsonProperty("size")
     @Column(name = "variant")
     private String variant;
-    @JsonIgnore
-    @Transient
+    @JsonProperty("colour")
+    @Column(name = "colour")
     private String colour;
+    @JsonProperty("sex")
+    @Column(name = "sex")
+    private String sex;
     @JsonIgnore
     @Column(name = "colour_id")
     private int colourId;
-    @JsonIgnore
+    @JsonProperty("selling_price")
     @Column(name = "selling_price")
     private Long sellingPrice;
     @JsonProperty("purchasePrice")
@@ -117,12 +123,20 @@ public class Product {
         this.theme = theme;
     }
 
-    public Long getCategoryId() {
-        return categoryId;
+    public String getType() {
+        return type;
     }
 
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getStatus() {
@@ -159,6 +173,18 @@ public class Product {
 
     public void setColour(String colour) {
         this.colour = colour;
+    }
+
+    public void setThemeId(Integer themeId) {
+        this.themeId = themeId;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
     }
 
     public Long getSellingPrice() {
@@ -230,7 +256,6 @@ public class Product {
                 ", name='" + name + '\'' +
                 ", themeId=" + themeId +
                 ", theme='" + theme + '\'' +
-                ", categoryId=" + categoryId +
                 ", status='" + status + '\'' +
                 ", variant='" + variant + '\'' +
                 ", colour='" + colour + '\'' +

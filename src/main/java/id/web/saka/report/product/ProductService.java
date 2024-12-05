@@ -21,6 +21,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -89,7 +90,7 @@ public class ProductService {
         Colour colour = colourService.getColourId(product.getColour());
 
         product.setBrand(brand);
-        product.setCategoryId(categoryService.getCategoryGinee(objectMapper.readTree(response.getBody()).get("data").get("fullCategoryId"), objectMapper.readTree(response.getBody()).get("data").get("fullCategoryName")));
+        product.setSpu(categoryService.getCategoryGinee(objectMapper.readTree(response.getBody()).get("data").get("fullCategoryId"), objectMapper.readTree(response.getBody()).get("data").get("fullCategoryName")));
         product.setStatusEnum(ProductStatus.NEW);
         product.setColour(colour.getName());
         product.setColourId(colour.getCode());
@@ -123,7 +124,6 @@ public class ProductService {
                 productVariant.setColour(product.getColour());
                 productVariant.setTheme(productVariant.getTheme());
                 productVariant.setThemeId(product.getThemeId());
-                productVariant.setCategoryId(product.getCategoryId());
                 productVariant.setCreateDatetime(product.getCreateDatetime());
                 productVariant.setUpdateDatetime(product.getUpdateDatetime());
                 productVariant.setVariant(Util.arrayJsonNodetoString(jsonNode.get("optionValues")));
@@ -163,7 +163,7 @@ public class ProductService {
             invarticle.put("salePrice", productSpu.getSellingPrice()+"");
             invarticle.put("notes", "-");
             invarticle.put("itemgroup", 101);
-            invarticle.put("code_CatType", productSpu.getCategoryId()); //TODO : Need checks code_catType
+            //invarticle.put("code_CatType", productSpu.getCategoryId()); //TODO : Need checks code_catType
 
             List<Product> productMsku = productRepository.findBySpu(productSpu.getSpu());
 
@@ -207,5 +207,84 @@ public class ProductService {
 
         }
 
+    }
+
+    public boolean saveMasterProductRevota(String brand, String requestBody) throws JsonProcessingException {
+        LOG.info("saveMasterProductRevota|start");
+        boolean isSaveSuccess = false;
+        ObjectMapper objectMapper; objectMapper = new ObjectMapper();
+
+        JsonNode jsonNode = objectMapper.readTree(requestBody).get("data");
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        List<Product> products = jsonNode.isArray()?  Arrays.stream(objectMapper.convertValue(jsonNode, Product[].class)).toList(): Collections.singletonList(objectMapper.convertValue(jsonNode, Product.class));  ;
+
+        if(products != null && products.size() > 0) {
+            int i = 0;
+
+            for(Product product : products) {
+                productRepository.save(getMasterProductDetailRevota(brand, product));
+
+                if(i > 999) {
+                    productRepository.flush();
+                    LOG.info("saveMasterProductRevota|flushed");
+                    i = 0;
+                    isSaveSuccess = true;
+                }
+
+                LOG.info("saveMasterProductRevota|Saved="+product.toString());
+                i++;
+            }
+
+        }
+
+        return isSaveSuccess;
+    }
+
+    public boolean saveMasterProductCogs(String brand, String requestBody) throws JsonProcessingException {
+        LOG.info("saveMasterProductCogs|start");
+        boolean isSaveSuccess = false;
+        ObjectMapper objectMapper; objectMapper = new ObjectMapper();
+
+        JsonNode jsonNode = objectMapper.readTree(requestBody).get("data");
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        List<Product> products = jsonNode.isArray()?  Arrays.stream(objectMapper.convertValue(jsonNode, Product[].class)).toList(): Collections.singletonList(objectMapper.convertValue(jsonNode, Product.class));  ;
+
+        if(products != null && products.size() > 0) {
+            int i = 0;
+            for(Product product : products) {
+                productRepository.updatePurchasePrice(product.getMsku(), product.getPurchasePrice());
+
+                if(i > 999) {
+                    productRepository.flush();
+                    LOG.info("saveMasterProductCogs|flushed");
+                    isSaveSuccess = true;
+                    i = 0;
+                }
+
+                LOG.info("saveMasterProductCogs|Saved="+product.toString());
+                i++;
+            }
+
+        }
+
+        return isSaveSuccess;
+    }
+
+    private Product getMasterProductDetailRevota(String brand, Product product) throws JsonProcessingException {
+        Colour colour = colourService.getColourId(product.getColour());
+
+        product.setId(product.getMsku());
+        product.setStatusEnum(ProductStatus.NEW);
+        product.setColourId(colour.getCode());
+        product.setCreateDatetime(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date()));
+        product.setUpdateDatetime(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date()));
+
+        Theme theme = themeService.getThemeByThemeIdNameAndCategoryLevel1(product.getCategory(), product.getName(), product.getType());
+        product.setThemeId(theme.getCode());
+        product.setTheme(theme.getName());
+
+        return product;
     }
 }

@@ -1,41 +1,60 @@
 package id.web.saka.report.category;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import com.google.cloud.spring.data.spanner.core.mapping.PrimaryKey;
 
 @Entity
 @Table(name = "category")
 public class Category {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.SEQUENCE ,generator = "category_generator")
-    @SequenceGenerator(name = "category_generator", sequenceName = "category_seq", allocationSize = 1)
-    @Column(name = "id")
-    private Long id;
+    @PrimaryKey
+    @JsonProperty("spu")
+    @Column(name = "spu")
+    private String spu;
 
+    @JsonProperty("category")
     @Column(name = "category")
     private String category;
+
+    @JsonIgnore
     @Column(name = "category_level_1_id")
     private Long categoryLevel1Id;
 
+    @JsonProperty("category_level_1_name")
     @Column(name = "category_level_1_name")
     private String categoryLevel1Name;
 
+    @JsonIgnore
     @Column(name = "category_level_2_id")
     private Long categoryLevel2Id;
-
+    @JsonProperty("category_level_2_name")
     @Column(name = "category_level_2_name")
     private String categoryLevel2Name;
+
+    @JsonIgnore
     @Column(name = "category_level_3_id")
     private Long categoryLevel3Id;
+    @JsonProperty("category_level_3_name")
     @Column(name = "category_level_3_name")
     private String categoryLevel3Name;
 
-    public void setId(Long id) {
+    /*public void setId(Long id) {
         this.id = id;
     }
 
     public Long getId() {
         return id;
+    }*/
+
+    public String getSpu() {
+        return spu;
+    }
+
+    public void setSpu(String spu) {
+        this.spu = spu;
     }
 
     public String getCategory() {
