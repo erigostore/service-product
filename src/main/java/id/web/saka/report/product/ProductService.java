@@ -271,8 +271,20 @@ public class ProductService {
 
         return isSaveSuccess;
     }
+    public String findMasterProductBySkuBarcodeSize(String brand, String requestBody) throws JsonProcessingException {
+        ObjectMapper objectMapper; objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(requestBody).get("data");
 
-    private Product getMasterProductDetailRevota(String brand, Product product) throws JsonProcessingException {
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        Product product = objectMapper.convertValue(jsonNode, Product.class);
+
+        List<Product> products = productRepository.findAllBySpuIsLikeIgnoreCaseAndMskuIsLikeIgnoreCaseAndVariantIsLikeIgnoreCase(product.getSpu(), product.getMsku(), product.getVariant());
+
+        return new ObjectMapper().writeValueAsString(products);
+    }
+
+    private Product getMasterProductDetailRevota(String brand, Product product) {
         Colour colour = colourService.getColourId(product.getColour());
 
         product.setId(product.getMsku());
@@ -286,5 +298,60 @@ public class ProductService {
         product.setTheme(theme.getName());
 
         return product;
+    }
+
+    public String searchProductsByTextAndbyBarcodeOrSku(String brand, String searchType, String searchText) throws JsonProcessingException {
+        Product product = null;
+        List<Product> products = new ArrayList<>();
+        String[] lines = searchText.split(",");
+
+        if(lines != null) {
+            for(String line : lines) {
+                if("bybarcode".equalsIgnoreCase(searchType)) {
+                    product = searchProductByBarcode(brand, line.split("-"));
+                } else if ("bysku".equalsIgnoreCase(searchType)) {
+                    product = searchProductBySku(brand, line.split("-"));
+                }
+                if(product!=null) {products.add(product);}
+            }
+        }
+
+        return new ObjectMapper().writeValueAsString(products);
+    }
+
+    private Product searchProductByBarcode(String brand, String[] line) {
+        Product product = null;
+
+        if(line!=null && line.length==2) { //NOTE format data example 00ERXC0604-20
+            product = productRepository.findDistinctFirstByBrandAndMskuContainingIgnoreCase(brand, line[0].replaceAll("\\s+","").toUpperCase());
+            if(product!=null && line[1].matches("-?\\d+")) {product.setQuantity(Integer.parseInt(line[1]));}
+            if(product==null) { product = getFillNotFoundProduct("NOT AVAILABLE",  line[0], "NOT AVAILABLE"); }
+        }
+
+        return product;
+    }
+
+    private Product searchProductBySku(String brand, String[] line) {
+        Product product = null;
+
+        if(line!=null && line.length==3) { //NOTE format data example XC137-XXL-20
+            product = productRepository.findDistinctFirstByBrandAndSpuContainingIgnoreCaseAndVariantContainingIgnoreCase(brand, line[0].replaceAll("\\s+","").toUpperCase(), line[1].replaceAll("\\s+","").toUpperCase());
+            if(product!=null && line[2].matches("-?\\d+")) {product.setQuantity(Integer.parseInt(line[2]));}
+            if(product==null) { product = getFillNotFoundProduct(line[0], "NOT AVAILABLE", line[0]); }
+        }
+
+        return product;
+    }
+
+    private Product getFillNotFoundProduct(String spu, String msku, String variant) {
+        Product emptyProduct = new Product();
+
+        emptyProduct.setSpu(spu);
+        emptyProduct.setMsku(msku);
+        emptyProduct.setName("NOT AVAILABLE");
+        emptyProduct.setVariant(variant);
+        emptyProduct.setQuantity(0);
+
+        return emptyProduct;
     }
 }

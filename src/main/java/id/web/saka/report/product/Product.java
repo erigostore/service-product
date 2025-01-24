@@ -42,7 +42,7 @@ public class Product {
     @JsonIgnore
     @Column(name = "status")
     private String status;
-    @JsonProperty("size")
+    @JsonProperty("variant")
     @Column(name = "variant")
     private String variant;
     @JsonProperty("colour")
@@ -66,6 +66,10 @@ public class Product {
     @JsonProperty("updateDatetime")
     @Column(name = "update_datetime")
     private String updateDatetime;
+
+    @JsonProperty("quantity")
+    @Transient
+    private int quantity;
 
 
     public String getId() {
@@ -218,6 +222,15 @@ public class Product {
     public void setUpdateDatetime(String updateDatetime) {
         this.updateDatetime = updateDatetime;
     }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     @JsonProperty("sellingPrice")
     private void unpackSellingPriceAmount(Map<String, Long> sellingPriceMap) {
         sellingPrice = sellingPriceMap.get("amount");

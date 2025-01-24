@@ -75,4 +75,33 @@ public class ProductController {
         LOG.info("setSapMasterProductCogs|"+brand+"|isSaved="+isMasterDataSaved+"|isPassword="+isPassword+"|END");
         return ResponseEntity.ok("{ \"status\": true }");
     }
+
+    @CrossOrigin
+    @RequestMapping(value = "/findMasterProductBySkuBarcodeSize/{brand}/{password}")
+    public ResponseEntity findMasterProductBySkuBarcodeSize(@RequestBody String requestBody, @PathVariable String brand, @PathVariable String password) throws JsonProcessingException {
+        LOG.info("findMasterProductBySkuBarcodeSize|"+brand+"="+requestBody+"|START");
+        String jsonObject = "";
+
+        if((brand.equals("POLKA") && password.equals(env.getPolkaWebhookSecretKey())) ||
+                ((brand.equals("ERIGO") && password.equals(env.getErigoWebhookSecretKey())))
+        ) {
+            jsonObject = productService.findMasterProductBySkuBarcodeSize(brand, requestBody);
+        }
+
+        LOG.info("findMasterProductBySkuBarcodeSize|"+brand+"|jsonObject="+jsonObject+"|END");
+
+        return ResponseEntity.ok(jsonObject);
+    }
+
+    @CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.49.238.3:8585/", "http://103.135.49.140:8585/", "http://localhost:5173/",  "http://localhost:8080/", "http://172.16.1.23:8585/",  "http://172.16.1.23:8686/"} ,  maxAge = 3600)
+    @RequestMapping(value = "/searchProductsByTextAndbyBarcodeOrSku/{brand}/{searchType}/{searchText}")
+    public ResponseEntity searchProductsByTextAndbyBarcodeOrSku(@PathVariable String brand, @PathVariable String searchType, @PathVariable String searchText) throws JsonProcessingException {
+        LOG.info("searchProductsByTextAndbyBarcodeOrSku|brand="+brand+"|searchType="+searchType+"|searchText="+searchText+"|START");
+        String jsonObject = "";
+
+        jsonObject = productService.searchProductsByTextAndbyBarcodeOrSku(brand, searchType, searchText);
+
+        LOG.info("searchProductsByTextAndbyBarcodeOrSku|brand="+brand+"|searchType="+searchType+"|searchText="+searchText+"|Result=" + jsonObject+"|END");
+        return ResponseEntity.ok(jsonObject);
+    }
 }
