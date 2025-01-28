@@ -319,6 +319,21 @@ public class ProductService {
         return new ObjectMapper().writeValueAsString(products);
     }
 
+
+    public String searchMultiProductsByTextAndbyBarcodeOrSku(String brand, String searchType, String searchText) throws JsonProcessingException  {
+        List<Product> products = new ArrayList<>();
+
+        if("bypurespu".equalsIgnoreCase(searchType)) {
+            products = productRepository.findAllByBrandAndSpuContainingIgnoreCase(brand, searchText);
+        }
+
+        if(products == null && products.isEmpty()) {
+            return "{}";
+        }
+
+        return new ObjectMapper().writeValueAsString(products);
+    }
+
     private Product searchProductByBarcode(String brand, String[] line) {
         Product product = null;
 
@@ -354,4 +369,5 @@ public class ProductService {
 
         return emptyProduct;
     }
+
 }

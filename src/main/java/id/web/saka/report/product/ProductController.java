@@ -104,4 +104,16 @@ public class ProductController {
         LOG.info("searchProductsByTextAndbyBarcodeOrSku|brand="+brand+"|searchType="+searchType+"|searchText="+searchText+"|Result=" + jsonObject+"|END");
         return ResponseEntity.ok(jsonObject);
     }
+
+    @CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.49.238.3:8585/", "http://103.135.49.140:8585/", "http://localhost:5173/",  "http://localhost:8080/", "http://172.16.1.23:8585/",  "http://172.16.1.23:8686/"} ,  maxAge = 3600)
+    @RequestMapping(value = "/searchMultiProductsByTextAndbyBarcodeOrSku/{brand}/{searchType}/{searchText}")
+    public ResponseEntity searchMultiProductsByTextAndbyBarcodeOrSku(@PathVariable String brand, @PathVariable String searchType, @PathVariable String searchText) throws JsonProcessingException {
+        LOG.info("searchProductsByTextAndbyBarcodeOrSku|brand="+brand+"|searchType="+searchType+"|searchText="+searchText+"|START");
+        String jsonObject = "";
+
+        jsonObject = productService.searchMultiProductsByTextAndbyBarcodeOrSku(brand, searchType, searchText);
+
+        LOG.info("searchMultiProductsByTextAndbyBarcodeOrSku|brand="+brand+"|searchType="+searchType+"|searchText="+searchText+"|Result=" + jsonObject+"|END");
+        return ResponseEntity.ok(jsonObject);
+    }
 }

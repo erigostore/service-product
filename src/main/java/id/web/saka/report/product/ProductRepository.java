@@ -17,6 +17,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     Product findDistinctFirstByBrandAndSpuContainingIgnoreCaseAndVariantContainingIgnoreCase(String brand, String spu, String variant);
 
+    List<Product> findAllByBrandAndSpuContainingIgnoreCase(String brand, String spu);
+
     @Query("SELECT s FROM Product s WHERE s.status =:status AND s.brand =:brand AND s.purchasePrice > 0  GROUP BY s.spu ")
     List<Product> findByStatusGroupBySpu(@Param("brand") String brand, @Param("status") String status);
 
