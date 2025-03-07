@@ -33,6 +33,9 @@ public class Env {
     @Value("${sap.api.key.ip}")
     private String sapApiKeyIp;
 
+    @Value("${erigo.service.pos.url}")
+    private String erigoServicePosurl;
+
     public String getSecretKeyErigo() {
         return secretKeyErigo;
     }
@@ -103,5 +106,13 @@ public class Env {
 
     public void setSapApiKeyIp(String sapApiKeyIp) {
         this.sapApiKeyIp = sapApiKeyIp;
+    }
+
+    public String getErigoServicePosurl() {
+        return erigoServicePosurl;
+    }
+
+    public void setErigoServicePosurl(String erigoServicePosurl) {
+        this.erigoServicePosurl = erigoServicePosurl;
     }
 }

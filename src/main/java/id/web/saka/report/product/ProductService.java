@@ -235,10 +235,30 @@ public class ProductService {
                 LOG.info("saveMasterProductRevota|Saved="+product.toString());
                 i++;
             }
+            
+            saveMasterProductToOktopusPos(products);
 
         }
 
         return isSaveSuccess;
+    }
+
+    private void saveMasterProductToOktopusPos(List<Product> products) {
+        RestTemplate restTemplate = new RestTemplate();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String url = env.getErigoServicePosurl()+"/pos/product/addNewOktopusProduct/ERIGO";
+
+        HttpHeaders headers; headers = new HttpHeaders();
+        headers.set("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+
+        JSONObject orderJsonObject = new JSONObject();
+        orderJsonObject.put("data", products);
+
+        HttpEntity<String> request = new HttpEntity<String>(orderJsonObject.toString(), headers);
+        String orderResultAsJsonStr = restTemplate.postForObject(url, request, String.class);
+
+        LOG.info("saveMasterProductToOktopusPos="+orderResultAsJsonStr);
     }
 
     public boolean saveMasterProductCogs(String brand, String requestBody) throws JsonProcessingException {
