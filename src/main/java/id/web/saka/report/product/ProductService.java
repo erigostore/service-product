@@ -10,10 +10,15 @@ import id.web.saka.report.category.colour.Colour;
 import id.web.saka.report.category.colour.ColourService;
 import id.web.saka.report.category.theme.Theme;
 import id.web.saka.report.category.theme.ThemeService;
+import id.web.saka.report.product.DTO.ProductLabelDTO;
 import id.web.saka.report.sap.SapStatus;
 import id.web.saka.report.sap.SapStatusRepository;
 import id.web.saka.report.util.Env;
 import id.web.saka.report.util.Util;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import net.sf.jasperreports.json.data.JsonDataSource;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +26,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -48,6 +55,8 @@ public class ProductService {
     private Env env;
 
     public boolean saveMasterProduct(String brand, String requestBody) throws JsonProcessingException {
+
+
         boolean isSaveSuccess = false;
         ObjectMapper objectMapper; objectMapper = new ObjectMapper();
         JsonNode jsonNode = null;
@@ -245,7 +254,6 @@ public class ProductService {
 
     private void saveMasterProductToOktopusPos(List<Product> products) {
         RestTemplate restTemplate = new RestTemplate();
-        ObjectMapper objectMapper = new ObjectMapper();
 
         String url = env.getErigoServicePosurl()+"/pos/product/addNewOktopusProduct/ERIGO";
 
@@ -320,6 +328,13 @@ public class ProductService {
         return product;
     }
 
+    public String getMasterProductGroupBySpu(String brand, String status) throws JsonProcessingException {
+
+        List<Product> products = productRepository.findByStatusGroupBySpu(brand, status);
+
+        return new ObjectMapper().writeValueAsString(products);
+    }
+
     public String searchProductsByTextAndbyBarcodeOrSku(String brand, String searchType, String searchText) throws JsonProcessingException {
         Product product = null;
         List<Product> products = new ArrayList<>();
@@ -390,4 +405,72 @@ public class ProductService {
         return emptyProduct;
     }
 
+
+    /*https://stackoverflow.com/questions/60642696/jasperreports-json-data-report-shows-null-values-when-run-in-java*/
+    public ByteArrayOutputStream getMasterProductPdf(String brand, String status, String jsonData) throws JsonProcessingException {
+        LOG.info("getMasterProductPdf|brand="+brand+"|status="+status+"|jsonData="+jsonData+"|CONVERT JSON");
+        ObjectMapper objectMapper; objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(jsonData).get("data");
+
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        List<ProductLabelDTO> productLabelDTOList = List.of(objectMapper.convertValue(jsonNode, ProductLabelDTO[].class));
+
+        List<Product> products = convertProductLabelDTOToProduct(brand, productLabelDTOList);
+
+        JSONObject productJsonObject = new JSONObject();
+        productJsonObject.put("data", products);
+
+        return getMasterProductPdf(productJsonObject.toString());
+    }
+
+    private List<Product> convertProductLabelDTOToProduct(String brand, List<ProductLabelDTO> productLabelDTOList) {
+        LOG.info("convertProductLabelDTOToProduct|brand="+brand+"|productLabelDTOList="+productLabelDTOList+"|START");
+
+        Product productQuery = null;
+        List<Product> products = new ArrayList<>();
+        for(ProductLabelDTO productLabelDTO : productLabelDTOList) {
+            int size = productLabelDTO.getQuantity();
+            productQuery = productRepository.findDistinctFirstByBrandAndMskuContainingIgnoreCase(brand, productLabelDTO.getMsku());
+
+            for(int i = 0; i < size; i++) {
+                products.add(productQuery);
+            }
+        }
+
+        return products;
+    }
+
+    private ByteArrayOutputStream getMasterProductPdf(String jsonData) {
+        LOG.info("getMasterProductPdf|jsonData="+jsonData+"|FINAL JSON");
+        ByteArrayOutputStream baos;
+
+        try {
+            JasperDesign jasperDesign = JRXmlLoader.load(getClass().getResourceAsStream("/templates/Barcode_Json_105_22.jrxml"));
+
+            LOG.info("getMasterProductPdf|jasperDesign="+jasperDesign);
+
+            JasperReport jasperReport = JasperCompileManager.compileReport(jasperDesign);
+
+            //jsonData = "{ \"data\" : [{ brand: \"ERIGO\", msku: \"00ERSI0015\", spu: \"ER.IGO-SI003\", name: \"JOGGER PANTS ALEXA STRIPE NAVY\", type: \"JOGGER PANTS\", variant:\"36\", colour:\"NAVY\", selling_price:450000 }]  }"; // Your JSON data, Sample for testing*/
+
+            ByteArrayInputStream jsonDataStream = new ByteArrayInputStream(jsonData.getBytes());
+            JsonDataSource ds = new JsonDataSource(jsonDataStream, "data");
+
+            Map parameters = new HashMap();
+            Locale locale = new Locale( "id", "ID" );
+            parameters.put( JRParameter.REPORT_LOCALE, locale );
+
+            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, ds);
+
+            byte[] pdfByte = JasperExportManager.exportReportToPdf(jasperPrint);
+
+            baos = new ByteArrayOutputStream(pdfByte.length);
+            baos.write(pdfByte, 0, pdfByte.length);
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        }
+
+        return baos;
+    }
 }

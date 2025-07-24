@@ -1,0 +1,107 @@
+<!-- Created with Jaspersoft Studio version 7.0.1.final using JasperReports Library version 7.0.1-573496633c2b4074e32f433154b543003f7d2498  -->
+<jasperReport name="Barcode_Json_105_22" language="java" columnCount="2" pageWidth="305" pageHeight="62" columnWidth="142" columnSpacing="20" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="2f81ea81-3a36-4982-86a9-d08857712960">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
+	<property name="com.jaspersoft.studio.unit." value="mm"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="mm"/>
+	<query language="json"><![CDATA[data]]></query>
+	<field name="brand" class="java.lang.String">
+		<description><![CDATA[brand]]></description>
+		<property name="net.sf.jasperreports.json.field.expression" value="brand"/>
+	</field>
+	<field name="msku" class="java.lang.String">
+		<description><![CDATA[msku]]></description>
+		<property name="net.sf.jasperreports.json.field.expression" value="msku"/>
+	</field>
+	<field name="spu" class="java.lang.String">
+		<description><![CDATA[spu]]></description>
+		<property name="net.sf.jasperreports.json.field.expression" value="spu"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<description><![CDATA[name]]></description>
+		<property name="net.sf.jasperreports.json.field.expression" value="name"/>
+	</field>
+	<field name="type" class="java.lang.String">
+		<description><![CDATA[type]]></description>
+		<property name="net.sf.jasperreports.json.field.expression" value="type"/>
+	</field>
+	<field name="colour" class="java.lang.String">
+		<description><![CDATA[colour]]></description>
+		<property name="net.sf.jasperreports.json.field.expression" value="colour"/>
+	</field>
+	<field name="variant" class="java.lang.String">
+		<description><![CDATA[variant]]></description>
+		<property name="net.sf.jasperreports.json.field.expression" value="variant"/>
+	</field>
+	<field name="sellingPrice" class="java.math.BigDecimal">
+		<description><![CDATA[sellingPrice]]></description>
+		<property name="net.sf.jasperreports.json.field.expression" value="sellingPrice"/>
+	</field>
+	<group name="brand">
+		<expression><![CDATA[$F{brand}]]></expression>
+	</group>
+	<group name="msku">
+		<expression><![CDATA[$F{msku}]]></expression>
+	</group>
+	<group name="spu">
+		<expression><![CDATA[$F{spu}]]></expression>
+	</group>
+	<group name="name">
+		<expression><![CDATA[$F{name}]]></expression>
+	</group>
+	<group name="type">
+		<expression><![CDATA[$F{type}]]></expression>
+	</group>
+	<group name="colour">
+		<expression><![CDATA[$F{colour}]]></expression>
+	</group>
+	<group name="variant">
+		<expression><![CDATA[$F{variant}]]></expression>
+	</group>
+	<group name="sellingPrice">
+		<expression><![CDATA[$F{sellingPrice}]]></expression>
+	</group>
+	<detail>
+		<band height="52" splitType="Immediate">
+			<element kind="textField" uuid="fdcc7d26-9f3e-4133-a6fa-7497b38103f5" x="-3" y="4" width="146" height="13" fontSize="10.0" hTextAlign="Center">
+				<expression><![CDATA[$F{brand}]]></expression>
+			</element>
+			<element kind="textField" uuid="b137d7e4-c5cb-4ecb-a6f7-c4858108c657" stretchType="ContainerBottom" x="-5" y="15" width="146" height="13" fontSize="6.0" hTextAlign="Center">
+				<expression><![CDATA[$F{name}]]></expression>
+			</element>
+			<element kind="component" uuid="7f086a40-a130-48d0-9cdc-1284c9898138" x="-6" y="22" width="146" height="13">
+				<component kind="barbecue" type="Code128" drawText="false" checksumRequired="false">
+					<codeExpression><![CDATA[$F{msku}]]></codeExpression>
+					<applicationIdentifierExpression><![CDATA[$F{msku}]]></applicationIdentifierExpression>
+				</component>
+				<property name="com.jaspersoft.studio.unit.barHeight" value="px"/>
+				<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
+			</element>
+			<element kind="frame" uuid="f8b1dffb-62ed-4344-b2d1-10d9406f8b80" x="3" y="30" width="146" height="6">
+				<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+				<element kind="textField" uuid="0dbc3466-1ee4-429c-b94b-b920186bcb42" x="0" y="0" width="73" height="13" fontSize="6.0">
+					<expression><![CDATA[$F{spu}]]></expression>
+				</element>
+				<element kind="textField" uuid="7b173219-25a2-4f06-bc4a-db01f52836f9" x="78" y="0" width="50" height="13" fontSize="6.0" hTextAlign="Right">
+					<expression><![CDATA[$F{msku}]]></expression>
+				</element>
+			</element>
+			<element kind="frame" uuid="f8b1dffb-62ed-4344-b2d1-10d9406f8b80" x="3" y="38" width="146" height="6">
+				<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+				<element kind="textField" uuid="0dbc3466-1ee4-429c-b94b-b920186bcb42" mode="Opaque" x="0" y="0" width="20" height="13" forecolor="#FFFFFF" backcolor="#030303" fontSize="10.0" hTextAlign="Center" vTextAlign="Middle">
+					<expression><![CDATA[$F{variant}]]></expression>
+				</element>
+				<element kind="textField" uuid="7b173219-25a2-4f06-bc4a-db01f52836f9" mode="Opaque" x="76" y="0" width="51" height="13" forecolor="#FFFFFF" backcolor="#030303" fontSize="8.0" pattern="¤ #,##0"  blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle">
+					<expression><![CDATA[$F{sellingPrice}]]></expression>
+				</element>
+			</element>
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+		</band>
+	</detail>
+</jasperReport>

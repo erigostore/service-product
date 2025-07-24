@@ -5,8 +5,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import id.web.saka.report.util.Env;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("product")
@@ -33,6 +39,55 @@ public class ProductController {
         LOG.info("getGineeMasterProductId|"+brand+"|isSaved="+isMasterDataSaved+"|isPassword="+isPassword+"|END");
         return ResponseEntity.ok("{ \"status\": true }");
     }
+
+    @CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.135.49.140:8585/", "http://localhost:5173/", "http://localhost:5174/",  "http://localhost:8080/", "http://172.16.1.23/", "http://172.16.1.23:80/",  "http://172.16.1.25:80/"} ,  maxAge = 3600)
+    @RequestMapping(value = "/getMasterProductGroupBySpu/{brand}/{status}")
+    public ResponseEntity getMasterProductGroupBySpu(@PathVariable String brand, @PathVariable String status) throws JsonProcessingException {
+        LOG.info("getMasterProductGroupBySpu|"+brand+"|"+ status+"|START");
+
+        String jsonObject = productService.getMasterProductGroupBySpu(brand, status);
+
+        LOG.info("getMasterProductGroupBySpu|"+brand+"|JSON isEmpty ="+jsonObject.isEmpty()+"|END");
+        return ResponseEntity.ok(jsonObject);
+    }
+
+    @CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.135.49.140:8585/", "http://localhost:5173/", "http://localhost:5174/",  "http://localhost:8080/", "http://172.16.1.23/", "http://172.16.1.23:80/",  "http://172.16.1.25:80/"} ,  maxAge = 3600)
+    @RequestMapping(value = "/getMasterProductPdf/{brand}/{status}")
+    public ResponseEntity<byte[]> getMasterProductPdf(@RequestBody String requestBody, @PathVariable String brand, @PathVariable String status) throws IOException {
+        LOG.info("getMasterProductPdf|"+brand+"="+requestBody+"|START");
+
+        ByteArrayOutputStream baos = productService.getMasterProductPdf(brand, status, requestBody);
+
+        byte[] pdfBytes = baos.toByteArray();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentLength( pdfBytes.length );
+        headers.setContentDispositionFormData("attachment", "document.pdf"); // Suggest filename
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    /*@CrossOrigin
+    @RequestMapping(value = "/getMasterProductPdfTest/{brand}/{status}")
+    public ResponseEntity<byte[]> getMasterProductPdfTest(@PathVariable String brand, @PathVariable String status) throws IOException {
+        LOG.info("getMasterProductPdf|"+brand+"="+"|START");
+
+        LOG.info("getMasterProductPdf|"+brand+"="+"requestBody"+"|START");
+
+        ByteArrayOutputStream baos = productService.getMasterProductPdf(brand, status, "requestBody");
+
+        byte[] pdfBytes = baos.toByteArray();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentLength( pdfBytes.length );
+        headers.setContentDispositionFormData("attachment", "document.pdf"); // Suggest filename
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }*/
 
     @RequestMapping(value = "/setSapMasterProductId/{brand}/{status}")
     public ResponseEntity setSapMasterProductId(@PathVariable String brand, @PathVariable String status) throws Exception {
@@ -93,7 +148,8 @@ public class ProductController {
         return ResponseEntity.ok(jsonObject);
     }
 
-    @CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.49.238.3:8585/", "http://103.135.49.140:8585/", "http://localhost:5173/",  "http://localhost:8080/", "http://172.16.1.23:8585/",  "http://172.16.1.23:8686/"} ,  maxAge = 3600)
+    /*@CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.49.238.3:8585/", "http://103.135.49.140:8585/", "http://localhost:5173/",  "http://localhost:8080/", "http://172.16.1.23:8585/",  "http://172.16.1.23:8686/"} ,  maxAge = 3600)*/
+    @CrossOrigin(origins = "*")
     @RequestMapping(value = "/searchProductsByTextAndbyBarcodeOrSku/{brand}/{searchType}/{searchText}")
     public ResponseEntity searchProductsByTextAndbyBarcodeOrSku(@PathVariable String brand, @PathVariable String searchType, @PathVariable String searchText) throws JsonProcessingException {
         LOG.info("searchProductsByTextAndbyBarcodeOrSku|brand="+brand+"|searchType="+searchType+"|searchText="+searchText+"|START");
@@ -105,7 +161,8 @@ public class ProductController {
         return ResponseEntity.ok(jsonObject);
     }
 
-    @CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.49.238.3:8585/", "http://103.135.49.140:8585/", "http://localhost:5173/",  "http://localhost:8080/", "http://172.16.1.23:8585/",  "http://172.16.1.23:8686/"} ,  maxAge = 3600)
+    /*@CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.135.49.140:8585/", "http://localhost:5173/",  "http://localhost:8080/", "http://172.16.1.23:8585/",  "http://172.16.1.25:8585/"} ,  maxAge = 3600)*/
+    @CrossOrigin(origins = "*")
     @RequestMapping(value = "/searchMultiProductsByTextAndbyBarcodeOrSku/{brand}/{searchType}/{searchText}")
     public ResponseEntity searchMultiProductsByTextAndbyBarcodeOrSku(@PathVariable String brand, @PathVariable String searchType, @PathVariable String searchText) throws JsonProcessingException {
         LOG.info("searchProductsByTextAndbyBarcodeOrSku|brand="+brand+"|searchType="+searchType+"|searchText="+searchText+"|START");
