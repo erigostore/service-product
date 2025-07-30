@@ -13,6 +13,8 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
+    Product findFirstById(String id);
+
     Product findDistinctFirstByBrandAndMskuContainingIgnoreCase(String brand, String msku);
 
     Product findDistinctFirstByBrandAndSpuContainingIgnoreCaseAndVariantContainingIgnoreCase(String brand, String spu, String variant);

@@ -117,4 +117,34 @@ public final class Util {
         return jsonText;
     }
 
+    public static String getNextAlphabetSequence(String current) {
+        // Convert the string into a character array for manipulation
+        char[] chars = current.toCharArray();
+
+        // Start from the last character and work backwards
+        int i = chars.length - 1;
+
+        // Iterate and increment the characters as needed
+        while (i >= 0) {
+            // If the character is 'Z', reset it to 'A' and move left
+            if (chars[i] == 'Z') {
+                chars[i] = 'A';
+                i--;
+            } else {
+                // Increment the character by 1
+                chars[i]++;
+                break;
+            }
+        }
+
+        // If all characters were 'Z' and now are 'A', we need to add another character at the beginning
+        if (i < 0) {
+            // The result will have one more character at the start (e.g., "ZZ" -> "AAA")
+            return "A" + new String(chars);
+        }
+
+        // Return the next sequence
+        return new String(chars);
+    }
+
 }

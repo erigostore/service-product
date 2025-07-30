@@ -1,5 +1,7 @@
 package id.web.saka.report.category.theme;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,5 +54,11 @@ public class ThemeService {
         }
 
         return themeIdString;
+    }
+
+    public String getAllThemes() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return objectMapper.writeValueAsString(themeRepository.findAll());
     }
 }

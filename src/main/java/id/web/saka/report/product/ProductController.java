@@ -69,26 +69,6 @@ public class ProductController {
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
 
-    /*@CrossOrigin
-    @RequestMapping(value = "/getMasterProductPdfTest/{brand}/{status}")
-    public ResponseEntity<byte[]> getMasterProductPdfTest(@PathVariable String brand, @PathVariable String status) throws IOException {
-        LOG.info("getMasterProductPdf|"+brand+"="+"|START");
-
-        LOG.info("getMasterProductPdf|"+brand+"="+"requestBody"+"|START");
-
-        ByteArrayOutputStream baos = productService.getMasterProductPdf(brand, status, "requestBody");
-
-        byte[] pdfBytes = baos.toByteArray();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentLength( pdfBytes.length );
-        headers.setContentDispositionFormData("attachment", "document.pdf"); // Suggest filename
-        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
-        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
-    }*/
-
     @RequestMapping(value = "/setSapMasterProductId/{brand}/{status}")
     public ResponseEntity setSapMasterProductId(@PathVariable String brand, @PathVariable String status) throws Exception {
         LOG.info("setSapMasterProductId|"+brand+"="+brand+"|status="+status+"|START");
@@ -114,6 +94,20 @@ public class ProductController {
 
         LOG.info("setRevotaMasterProduct|"+brand+"|isSaved="+isMasterDataSaved+"|isPassword="+isPassword+"|END");
         return ResponseEntity.ok("{ \"status\": true }");
+    }
+
+    @CrossOrigin
+    @RequestMapping(value = "/setNewMasterProductManual")
+    public ResponseEntity setNewMasterProductManual(@RequestBody String requestBody) throws JsonProcessingException {
+        LOG.info("setNewMasterProductManual|"+requestBody+"|START");
+
+
+        String response = productService.setNewMasterProductManual(requestBody);
+
+
+        LOG.info("setNewMasterProductManual|"+requestBody+"|Response="+response+"|END");
+
+        return ResponseEntity.ok("{ \"status\": \""+response+"\" }");
     }
     @CrossOrigin
     @RequestMapping(value = "/setSapMasterProductCogs/{brand}/{password}")

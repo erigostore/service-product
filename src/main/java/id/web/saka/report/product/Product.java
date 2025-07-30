@@ -1,5 +1,6 @@
 package id.web.saka.report.product;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -14,6 +15,11 @@ public class Product {
     @JsonProperty("masterProductId")
     @Column(name = "id")
     private String id;
+
+    @JsonIgnore
+    @Column(name = "brand_id")
+    private int brandId;
+
     @JsonProperty("brand")
     @Column(name = "brand")
     private String brand;
@@ -30,30 +36,38 @@ public class Product {
     @JsonIgnore
     @Column(name = "theme_id")
     private Integer themeId;
-    @JsonIgnore
+    @JsonProperty("category")
     @Transient
     private String theme;
+
+    @JsonIgnore
+    @Column(name = "type_id")
+    private int typeId;
+
     @JsonProperty("type")
     @Column(name = "type")
     private String type;
-    @JsonProperty("category")
-    @Transient
-    private String category;
     @JsonIgnore
     @Column(name = "status")
     private String status;
     @JsonProperty("variant")
     @Column(name = "variant")
     private String variant;
-    @JsonProperty("colour")
-    @Column(name = "colour")
-    private String colour;
-    @JsonProperty("sex")
-    @Column(name = "sex")
-    private String sex;
+
     @JsonIgnore
     @Column(name = "colour_id")
     private int colourId;
+    @JsonProperty("colour")
+    @Column(name = "colour")
+    private String colour;
+
+    @JsonIgnore
+    @Column(name = "gender_id")
+    private int genderId;
+    @JsonProperty("sex")
+    @JsonAlias("gender")
+    @Column(name = "gender")
+    private String gender;
     @JsonProperty("selling_price")
     @Column(name = "selling_price")
     private Long sellingPrice;
@@ -75,8 +89,17 @@ public class Product {
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
+    }
+
+    public int getBrandId() {
+        return brandId;
+    }
+
+    public void setBrandId(int brandId) {
+        this.brandId = brandId;
     }
 
     public String getBrand() {
@@ -87,20 +110,20 @@ public class Product {
         this.brand = brand;
     }
 
-    public String getSpu() {
-        return spu;
-    }
-
-    public void setSpu(String spuId) {
-        this.spu = spuId;
-    }
-
     public String getMsku() {
         return msku;
     }
 
-    public void setMsku(String id) {
-        this.msku = id;
+    public void setMsku(String msku) {
+        this.msku = msku;
+    }
+
+    public String getSpu() {
+        return spu;
+    }
+
+    public void setSpu(String spu) {
+        this.spu = spu;
     }
 
     public String getName() {
@@ -115,7 +138,7 @@ public class Product {
         return themeId;
     }
 
-    public void setThemeId(int themeId) {
+    public void setThemeId(Integer themeId) {
         this.themeId = themeId;
     }
 
@@ -127,20 +150,20 @@ public class Product {
         this.theme = theme;
     }
 
+    public int getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(int typeId) {
+        this.typeId = typeId;
+    }
+
     public String getType() {
         return type;
     }
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public String getStatus() {
@@ -179,16 +202,20 @@ public class Product {
         this.colour = colour;
     }
 
-    public void setThemeId(Integer themeId) {
-        this.themeId = themeId;
+    public int getGenderId() {
+        return genderId;
     }
 
-    public String getSex() {
-        return sex;
+    public void setGenderId(int genderId) {
+        this.genderId = genderId;
     }
 
-    public void setSex(String sex) {
-        this.sex = sex;
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public Long getSellingPrice() {
@@ -259,24 +286,31 @@ public class Product {
         }
     }
 
+
     @Override
     public String toString() {
         return "Product{" +
                 "id='" + id + '\'' +
+                ", brandId=" + brandId +
                 ", brand='" + brand + '\'' +
                 ", msku='" + msku + '\'' +
                 ", spu='" + spu + '\'' +
                 ", name='" + name + '\'' +
                 ", themeId=" + themeId +
                 ", theme='" + theme + '\'' +
+                ", typeId=" + typeId +
+                ", type='" + type + '\'' +
                 ", status='" + status + '\'' +
                 ", variant='" + variant + '\'' +
-                ", colour='" + colour + '\'' +
                 ", colourId=" + colourId +
+                ", colour='" + colour + '\'' +
+                ", genderId=" + genderId +
+                ", gender='" + gender + '\'' +
                 ", sellingPrice=" + sellingPrice +
                 ", purchasePrice=" + purchasePrice +
                 ", createDatetime='" + createDatetime + '\'' +
                 ", updateDatetime='" + updateDatetime + '\'' +
+                ", quantity=" + quantity +
                 '}';
     }
 }

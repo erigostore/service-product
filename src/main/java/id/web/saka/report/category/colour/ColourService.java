@@ -1,9 +1,11 @@
 package id.web.saka.report.category.colour;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -11,7 +13,8 @@ public class ColourService {
 
     @Autowired
     private ColourRepository colourRepository;
-    public Colour getColourId(String colourName) {
+
+    public Colour getColourName(String colourName) {
         Colour colour = null;
 
         if(colourName != null) {
@@ -25,9 +28,17 @@ public class ColourService {
         return colour;
     }
 
-    public Colour getColourName(int colourId) {
+    public Colour getColourCode(int colourId) {
         Optional<Colour> colourOptional = colourRepository.findById(colourId);
 
         return colourOptional.get();
+    }
+
+    public String getAllColours() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        List<Colour> colourList = colourRepository.findAll();
+
+        return objectMapper.writeValueAsString(colourList);
     }
 }

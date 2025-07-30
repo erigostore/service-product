@@ -5,11 +5,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.web.saka.report.brand.Brand;
+import id.web.saka.report.brand.BrandService;
 import id.web.saka.report.category.CategoryService;
 import id.web.saka.report.category.colour.Colour;
 import id.web.saka.report.category.colour.ColourService;
+import id.web.saka.report.category.gender.Gender;
+import id.web.saka.report.category.gender.GenderService;
+import id.web.saka.report.category.size.Size;
+import id.web.saka.report.category.size.SizeService;
 import id.web.saka.report.category.theme.Theme;
 import id.web.saka.report.category.theme.ThemeService;
+import id.web.saka.report.category.type.Type;
+import id.web.saka.report.category.type.TypeService;
+import id.web.saka.report.product.DTO.ProductCreateDTO;
 import id.web.saka.report.product.DTO.ProductLabelDTO;
 import id.web.saka.report.sap.SapStatus;
 import id.web.saka.report.sap.SapStatusRepository;
@@ -40,6 +49,15 @@ public class ProductService {
     private ProductRepository productRepository;
 
     @Autowired
+    private BrandService brandService;
+
+    @Autowired
+    private GenderService genderService;
+
+    @Autowired
+    private SizeService sizeService;
+
+    @Autowired
     private CategoryService categoryService;
 
     @Autowired
@@ -47,6 +65,9 @@ public class ProductService {
 
     @Autowired
     private ThemeService themeService;
+
+    @Autowired
+    private TypeService typeService;
 
     @Autowired
     private SapStatusRepository sapStatusRepository;
@@ -96,7 +117,7 @@ public class ProductService {
         JsonNode jsonNode = objectMapper.readTree(response.getBody()).get("data");
         product = objectMapper.convertValue(jsonNode, Product.class);
 
-        Colour colour = colourService.getColourId(product.getColour());
+        Colour colour = colourService.getColourName(product.getColour());
 
         product.setBrand(brand);
         product.setSpu(categoryService.getCategoryGinee(objectMapper.readTree(response.getBody()).get("data").get("fullCategoryId"), objectMapper.readTree(response.getBody()).get("data").get("fullCategoryName")));
@@ -166,7 +187,7 @@ public class ProductService {
             invarticle.put("articleCode", productSpu.getSpu());
             invarticle.put("articleName", productSpu.getName());
             invarticle.put("colourInit", productSpu.getColourId());
-            invarticle.put("colourName", colourService.getColourName(productSpu.getColourId()).getName());
+            invarticle.put("colourName", colourService.getColourCode(productSpu.getColourId()).getName());
             invarticle.put("sex", "U");
             invarticle.put("basePrice", productSpu.getPurchasePrice()+"");
             invarticle.put("salePrice", productSpu.getSellingPrice()+"");
@@ -269,6 +290,136 @@ public class ProductService {
         LOG.info("saveMasterProductToOktopusPos="+orderResultAsJsonStr);
     }
 
+    public String setNewMasterProductManual(String requestBody) throws JsonProcessingException {
+        LOG.info("setNewMasterProductManual|requestBody:"+requestBody+"|START");
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        JsonNode jsonNode = objectMapper.readTree(requestBody).get("data");
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        ProductCreateDTO productCreateDTO = objectMapper.convertValue(jsonNode, ProductCreateDTO.class);;
+
+        return convertProductCreateDTOToProduct(productCreateDTO);
+    }
+
+    private String convertProductCreateDTOToProduct(ProductCreateDTO productCreateDTO) {
+
+        Brand brand = brandService.getBrandById(productCreateDTO.getBrandId());
+        LOG.info("convertProductCreateDTOToProduct|brand="+brand.toString()+"|BRAND");
+        Colour colour = colourService.getColourCode(productCreateDTO.getColourCode());
+        Gender gender = genderService.getGenderById(productCreateDTO.getGenderId());
+        List<String> sizes = sizeService.getSizes(productCreateDTO.getSizeId());
+        Theme theme = themeService.getThemeId(productCreateDTO.getThemeId());
+        Type type = typeService.getTypeById(productCreateDTO.getTypeId());
+
+        List<String> mskus = createMsku(brand, type, sizes);
+        String spu = createSpu(brand, type);
+
+        setProduct(productCreateDTO, brand, colour, gender, sizes, theme, type, mskus, spu);
+
+        return spu + " -> " + String.join(", ", mskus);
+    }
+
+    private String createSpu(Brand brand, Type type) {
+        int maxSpu = 999;
+        type.setSpuCounter(type.getSpuCounter() + 1);
+        // Construct the SPU using the brand code, type code, and spu counter
+        String spu = "ER." + brand.getCode() + "-" + type.getCode()  + type.getSpuCounter();
+
+        List<Product> products  = productRepository.findAllByBrandAndSpuContainingIgnoreCase(brand.getName(), spu);
+
+        if(products != null && !products.isEmpty()) {
+            // If the spu already exists, we need to increment the counter and try again
+            LOG.info("createSpu|spu already exists, incrementing counter for spu: " + spu);
+
+            if(type.getSpuCounter() > maxSpu) {
+                //NOTE CHANGE TYPE CODE, EXAMPLE FROM AA TO AB
+                type.setCode(Util.getNextAlphabetSequence(type.getCode()));
+                type.setSpuCounter(0);
+            }
+
+            return createSpu(brand, type);
+        }
+
+        typeService.update(type);
+
+        return spu;
+    }
+
+    private List<String> createMsku(Brand brand, Type type, List<String> sizes) {
+        List<String> mskus = new ArrayList<>();
+        int maxMsku = 9999;
+        int length = sizes.size();
+        Product product;
+
+        for(int i = 0; i <= length; i++) {
+            type.setMskuCounter(type.getMskuCounter() + 1);
+
+            if(type.getMskuCounter() <= maxMsku) {
+                String msku = "00ER" + type.getCode() + String.format("%04d", type.getMskuCounter()) ;
+
+                LOG.info("createMsku|brand="+brand.getName()+"|type="+type.getTypeLevel1()+"|msku="+msku);
+
+                product = productRepository.findFirstById(msku);
+
+                if(product == null) {
+                    mskus.add(msku);
+                } else {
+                    // If the msku already exists, we need to increment the counter and try again
+                    LOG.info("createMsku|msku already exists, incrementing counter for msku: " + msku);
+                    i--;
+                }
+
+            } else {
+                //NOTE CHANGE TYPE CODE, EXAMPLE FROM AA TO AB
+                type.setCode(Util.getNextAlphabetSequence(type.getCode()));
+                type.setMskuCounter(0);
+                i--;
+            }
+
+        }
+
+        typeService.update(type);
+
+        LOG.info("createMsku|brand="+brand.getName()+"|type="+type.getTypeLevel1()+"|mskus="+String.join(", ", mskus));
+
+        return mskus;
+    }
+
+    private void setProduct(ProductCreateDTO productCreateDTO, Brand brand, Colour colour, Gender gender, List<String> sizes, Theme theme, Type type, List<String> mskus, String spu) {
+        Product product;
+        int length = sizes.size();
+
+        for(int i = 0; i < length; i++) {
+            product = new Product();
+
+            product.setId(mskus.get(i));
+            product.setBrandId(brand.getId());
+            product.setBrand(brand.getName().toUpperCase());
+            product.setMsku(mskus.get(i));
+            product.setStatus(ProductStatus.NEW.toString());
+            product.setSpu(spu);
+            product.setName(productCreateDTO.getProductName().toUpperCase() + " " + colour.getName());
+            product.setThemeId(theme.getCode());
+            product.setTheme(theme.getName());
+            product.setTypeId(type.getId());
+            product.setType(type.getTypeLevel1());
+            product.setVariant(sizes.get(i));
+            product.setColourId(colour.getCode());
+            product.setColour(colour.getName());
+            product.setGender(gender.getCode());
+            product.setGenderId(gender.getId());
+            product.setSellingPrice((long) productCreateDTO.getSellingPrice());
+            product.setPurchasePrice((long) productCreateDTO.getBuyingPrice());
+            product.setCreateDatetime(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date()));
+            product.setUpdateDatetime(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date()));
+
+            LOG.info("setProduct|product="+product.toString()+"|SAVING");
+
+            productRepository.save(product);
+        }
+    }
+
     public boolean saveMasterProductCogs(String brand, String requestBody) throws JsonProcessingException {
         LOG.info("saveMasterProductCogs|start");
         boolean isSaveSuccess = false;
@@ -313,15 +464,21 @@ public class ProductService {
     }
 
     private Product getMasterProductDetailRevota(String brand, Product product) {
-        Colour colour = colourService.getColourId(product.getColour());
+        Brand brandEntity = brandService.getBrandByName(brand);
+        Gender gender = genderService.getGenderByCode(product.getGender());
+        Type type = typeService.getTypeByName(product.getType());
+        Colour colour = colourService.getColourName(product.getColour());
 
         product.setId(product.getMsku());
+        product.setTypeId(type.getId());
+        product.setBrandId(brandEntity.getId());
+        product.setGenderId(gender.getId());
         product.setStatusEnum(ProductStatus.NEW);
         product.setColourId(colour.getCode());
         product.setCreateDatetime(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date()));
         product.setUpdateDatetime(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date()));
 
-        Theme theme = themeService.getThemeByThemeIdNameAndCategoryLevel1(product.getCategory(), product.getName(), product.getType());
+        Theme theme = themeService.getThemeByThemeIdNameAndCategoryLevel1(product.getTheme(), product.getName(), product.getType());
         product.setThemeId(theme.getCode());
         product.setTheme(theme.getName());
 
