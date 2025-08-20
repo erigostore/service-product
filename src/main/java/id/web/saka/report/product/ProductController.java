@@ -40,7 +40,7 @@ public class ProductController {
         return ResponseEntity.ok("{ \"status\": true }");
     }
 
-    @CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.135.49.140:8585/", "http://localhost:5173/", "http://localhost:5174/",  "http://localhost:8080/", "http://172.16.1.23/", "http://172.16.1.23:80/",  "http://172.16.1.25:80/"} ,  maxAge = 3600)
+    @CrossOrigin
     @RequestMapping(value = "/getMasterProductGroupBySpu/{brand}/{status}")
     public ResponseEntity getMasterProductGroupBySpu(@PathVariable String brand, @PathVariable String status) throws JsonProcessingException {
         LOG.info("getMasterProductGroupBySpu|"+brand+"|"+ status+"|START");
@@ -51,7 +51,7 @@ public class ProductController {
         return ResponseEntity.ok(jsonObject);
     }
 
-    @CrossOrigin(origins = {"https://dashboard.erigostore.co.id/", "http://103.135.49.140:8585/", "http://localhost:5173/", "http://localhost:5174/",  "http://localhost:8080/", "http://172.16.1.23/", "http://172.16.1.23:80/",  "http://172.16.1.25:80/"} ,  maxAge = 3600)
+    @CrossOrigin
     @RequestMapping(value = "/getMasterProductPdf/{brand}/{status}")
     public ResponseEntity<byte[]> getMasterProductPdf(@RequestBody String requestBody, @PathVariable String brand, @PathVariable String status) throws IOException {
         LOG.info("getMasterProductPdf|"+brand+"="+requestBody+"|START");

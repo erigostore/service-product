@@ -388,6 +388,7 @@ public class ProductService {
 
     private void setProduct(ProductCreateDTO productCreateDTO, Brand brand, Colour colour, Gender gender, List<String> sizes, Theme theme, Type type, List<String> mskus, String spu) {
         Product product;
+        List<Product> products = new ArrayList<>();
         int length = sizes.size();
 
         for(int i = 0; i < length; i++) {
@@ -417,7 +418,11 @@ public class ProductService {
             LOG.info("setProduct|product="+product.toString()+"|SAVING");
 
             productRepository.save(product);
+
+            products.add(product);
         }
+
+        saveMasterProductToOktopusPos(products);
     }
 
     public boolean saveMasterProductCogs(String brand, String requestBody) throws JsonProcessingException {
