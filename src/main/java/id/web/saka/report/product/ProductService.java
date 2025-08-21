@@ -248,12 +248,16 @@ public class ProductService {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         List<Product> products = jsonNode.isArray()?  Arrays.stream(objectMapper.convertValue(jsonNode, Product[].class)).toList(): Collections.singletonList(objectMapper.convertValue(jsonNode, Product.class));  ;
+        List<Product> productsToSave = new ArrayList<>();
 
         if(products != null && products.size() > 0) {
             int i = 0;
 
             for(Product product : products) {
-                productRepository.save(getMasterProductDetailRevota(brand, product));
+                Product productDetail = getMasterProductDetailRevota(brand, product);
+                productRepository.save(productDetail);
+
+                productsToSave.add(productDetail);
 
                 if(i > 999) {
                     productRepository.flush();
@@ -266,7 +270,7 @@ public class ProductService {
                 i++;
             }
             
-            saveMasterProductToOktopusPos(products);
+            saveMasterProductToOktopusPos(productsToSave);
 
         }
 
@@ -324,7 +328,7 @@ public class ProductService {
         int maxSpu = 999;
         type.setSpuCounter(type.getSpuCounter() + 1);
         // Construct the SPU using the brand code, type code, and spu counter
-        String spu = "ER." + brand.getCode() + "-" + type.getCode()  + type.getSpuCounter();
+        String spu = "ER." + brand.getCode() + "-" + type.getCode()  + String.format("%03d", type.getSpuCounter());
 
         List<Product> products  = productRepository.findAllByBrandAndSpuContainingIgnoreCase(brand.getName(), spu);
 
@@ -352,7 +356,7 @@ public class ProductService {
         int length = sizes.size();
         Product product;
 
-        for(int i = 0; i <= length; i++) {
+        for(int i = 0; i < length; i++) {
             type.setMskuCounter(type.getMskuCounter() + 1);
 
             if(type.getMskuCounter() <= maxMsku) {
@@ -476,6 +480,7 @@ public class ProductService {
 
         product.setId(product.getMsku());
         product.setTypeId(type.getId());
+        product.setType(type.getTypeLevel1());
         product.setBrandId(brandEntity.getId());
         product.setGenderId(gender.getId());
         product.setStatusEnum(ProductStatus.NEW);
